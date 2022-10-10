@@ -6,6 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 
+import { UserReducer } from './store/user/UserReducers';
+import { UserEffect } from './store/user/UserEffects';
+
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NavComponent } from './page/nav/nav.component';
@@ -31,8 +34,8 @@ import { JwtInterceptorService } from './service/jwt-interceptor.service';
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    StoreModule.forRoot({}, {}),
-    EffectsModule.forRoot()
+    StoreModule.forRoot({users: UserReducer}),
+    EffectsModule.forRoot([UserEffect]),
   ],
   providers: [
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptorService, multi: true},

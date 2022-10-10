@@ -17,12 +17,12 @@
       "role": "1"
     },
     {
-      "id": 3,
       "first_name": "Nickey",
-      "last_name": "Tyt",
+      "last_name": "Butt",
       "email": "ntyt2@psu.edu",
-      "password": "$2a$10$eZMp/S6cJtgOTy94BKQaAun/m.f3eIu8smIpIi2tvQUgGAiwxfDsy",
-      "role": 3
+      "password": "$2a$10$zoNUKYnEAzGwct0hPQ/jK.B.gZSd4KTXsFz12cPlVElRgtwMwSp/a",
+      "role": "1",
+      "id": 3
     },
     {
       "id": 4,
