@@ -1,7 +1,7 @@
-import { getItems, getOneItem, loadItems, LOAD_ITEMS, ERROR_ITEM, LOAD_SELECTED_ITEM, updateItem, LOAD_UPDATED_ITEM } from './UserActions';
+import { getItems, getOneItem, loadItems, LOAD_ITEMS, ERROR_ITEM, LOAD_SELECTED_ITEM, updateItem, LOAD_UPDATED_ITEM, addItem, LOAD_ADDED_ITEM, deleteItem, REMOVE_ITEM } from './UserActions';
 import{ Injectable } from '@angular/core';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
-import { catchError, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, switchMap, withLatestFrom, tap, mergeMap } from 'rxjs/operators';
 import { of, Observable } from 'rxjs';
 import { UserService } from 'src/app/service/user.service';
 import { User } from 'src/app/model/User';
@@ -61,7 +61,42 @@ export class UserEffect {
             ofType(updateItem),
             switchMap(action => this.userService.update(action.item)),
             switchMap(user => of({type: LOAD_UPDATED_ITEM, item: user})),
-            catchError(error => of({type: ERROR_ITEM, message: error})),
+            catchError(error => of({type: ERROR_ITEM, error})),
+        )
+    });
+
+    // Fontos:
+
+    // Ha kívül, az action pipe-ban keletkezik a hiba az elem hozzáadásához
+    // tartozó effectnél, azt nehéz eliminálni, hiszen kérdés,
+    // hogy hogyan tudjuk továbbpipe-olni.
+
+    // Ám a hiba valószínűleg a HTTP-kérésben keletkezik,
+    // így ha azt pipe-oljuk tovább, és ott kapjuk el a hibát,
+    // akkor az action nem áll le, továbbra is szolgáltat adatot.
+
+    // Ezért írjuk át a kódunkat (lásd itt):
+    addItem$ = createEffect ((): Observable<Action> => {
+        let lastAction: any;
+        return this.actions$.pipe(
+            ofType(addItem),
+            tap(action => lastAction = action),
+            mergeMap(action => this.userService.create(action.item).pipe(
+                switchMap(action => this.userService.query(`email=${lastAction.item.email}`)),
+                switchMap(user => of({type: LOAD_ADDED_ITEM, item: user})),
+                catchError(error => of({type: ERROR_ITEM, error})),
+            )),
+        )
+    });
+
+    deleteItem$ = createEffect((): Observable<Action> => {
+        let lastAction: any;
+        return this.actions$.pipe(
+            ofType(deleteItem),
+            tap(action => lastAction = action),
+            switchMap(action => this.userService.delete(action.item)),
+            switchMap(user => of({type: REMOVE_ITEM, item: lastAction.item})),
+            catchError(error => of({type: ERROR_ITEM, error})),
         )
     })
 

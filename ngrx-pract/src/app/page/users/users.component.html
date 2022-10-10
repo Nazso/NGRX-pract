@@ -1,4 +1,18 @@
 <div class="row">
+    <div *ngIf="error$ | async as error" class="col-12 mt-3 mb-3">
+      <div class="alert alert-danger">
+         <strong>Error: </strong>{{ error || '' }}
+      </div>
+    </div>
+  </div>
+<div class="row">
+    <div class="col-12">
+      <button (click)="create()" class="btn btn-lg btn-block btn-success mb-3">
+        Add New User
+      </button>
+    </div>
+  </div>
+<div class="row">
     <div class="col-12">
         <table class="table">
             <thead>
@@ -14,10 +28,15 @@
                         {{ user[col.key] }}            
                     </td>
                     <td>
-                        <a class="btn btn-info"
-                            routerLink="/user/edit/{{user.id}}">
-                            <i class="fa fa-pencil"></i>
-                        </a>
+                        <div class="btn-group">
+                            <a class="btn btn-info"
+                                routerLink="/user/edit/{{user.id}}">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                            <button (click)="delete(user)" class="btn btn-danger">
+                                <i class="fa fa-trash"></i>
+                            </button>                            
+                        </div>
                     </td>
                 </tr>
             </tbody>

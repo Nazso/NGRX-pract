@@ -1,7 +1,7 @@
 import { state } from "@angular/animations";
 import { createReducer, on } from "@ngrx/store";
 import { User } from "src/app/model/User";
-import { errorItem, loadItems, loadSelectedItem, loadUpdatedItem } from './UserActions';
+import { errorItem, loadItems, loadSelectedItem, loadUpdatedItem, loadAddedItem, removeDeletedItem, errorFlush } from './UserActions';
 
 // Az interfész leírja, hogyan néz ki a users objektum,
 // ennek User típusként megadom a selected-et (nem lesz kötelező),
@@ -12,11 +12,11 @@ export interface State {
     //az x-re azért van itt szükség, hogy string típussal bármilyen
     //értéket fel tudjak venni, ha szükséges
     [x: string]: any;
-    users: { items: User[], selected?: any, error: string };
+    users: { items: User[], selected?: any, error: any };
 }
 
 export const initialState: State = {
-    users: { items: [], selected: null, error: '' }
+    users: { items: [], selected: null, error: null }
 };
 
 export const UserReducer = createReducer(
@@ -38,10 +38,22 @@ export const UserReducer = createReducer(
             return newItems;
         })(state)
     })),
+    on(loadAddedItem, (state, action) =>({
+        ...state,
+        items: (state["items"] as User[]).concat(action.item)
+    })),
+    on(removeDeletedItem, (state, action) => ({
+        ...state,
+        items: (state["items"] as User[]).filter(item => item.id !== action.item.id)
+    })),
     on(errorItem, (state, action) => ({
         ...state,
-        error: action.message
+        error: action.error
     })),
+    on(errorFlush, (state, action) => ({
+        ...state,
+        error: null
+      })),
 );
 
 //selector
@@ -50,7 +62,7 @@ export const selectItems = (state: State) => state.users.items;
 //így ha változtatni akarok rajt az űrlapban, akkor hibát kapok.
 //így lemásolom az objektumot és azt lehet módosítani az űrlapban.
 export const selectOneItem = (state: State) => Object.assign({}, state.users.selected);
-export const selectError = (state: State) => state.users.error;
+export const selectError = (state: State) => state.users.error?.error;
 
 // Ez az egység átalakítja és a store-ban elhelyezi az adatokat,
 // illetve a szelektorok által elérhetővé teszi az adatokat a komponensek számára.
